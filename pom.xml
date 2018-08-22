@@ -4,11 +4,11 @@
   <artifactId>vebtal-imagecompare</artifactId>
   <version>0.9.0</version>
   
-	<name>Test Adaption Layer for Telnet 3270 terminals</name>
-	<description>Provides access for testing Telnet 3270 graphical user interfaces with junit / assertj or keyword driven approach</description>
+	<name>Test Adaption Layer for image comparison</name>
+	<description>Tests for comparing images and provides user interfaces with junit / assertj or keyword driven approach</description>
 	<inceptionYear>2018</inceptionYear>
 
-	<url>https://github.com/vebqa/vebtal-3270</url>
+	<url>https://github.com/vebqa/vebtal-imagecompare</url>
 	
 	<packaging>jar</packaging>
 
