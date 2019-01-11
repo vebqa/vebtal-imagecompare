@@ -1,11 +1,11 @@
 package org.vebqa.vebtal.icomprestserver;
 
 import org.apache.commons.configuration2.CombinedConfiguration;
-import org.apache.commons.configuration2.FileBasedConfiguration;
 import org.opencv.core.Core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vebqa.vebtal.AbstractTestAdaptionPlugin;
+import org.vebqa.vebtal.GuiManager;
 import org.vebqa.vebtal.TestAdaptionType;
 import org.vebqa.vebtal.model.Command;
 import org.vebqa.vebtal.model.CommandResult;
@@ -17,11 +17,10 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
 
-@SuppressWarnings("restriction")
 public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
 
 	private static final Logger logger = LoggerFactory.getLogger(IcompTestAdaptionPlugin.class);
-	
+
 	/**
 	 * unique id of the test adapter
 	 */
@@ -47,14 +46,15 @@ public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
 
 	@Override
 	public Tab startup() {
-		String opencv_path = "C:\\Tools\\OpenCV\\opencv341\\build\\java\\x86" + "\\" + Core.NATIVE_LIBRARY_NAME + ".dll";
+		String opencv_path = GuiManager.getinstance().getConfig().getString("opencv.path");
+		opencv_path = opencv_path + "\\" + Core.NATIVE_LIBRARY_NAME + ".dll";
 		try {
 			System.load(opencv_path);
 		} catch (Exception e) {
 			String tError = "Native code library failed to load from: " + opencv_path;
 			logger.error(tError, e);
 		}
-		
+
 		return createTab(ID, commandList, clData);
 	}
 
@@ -91,7 +91,6 @@ public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
 
 	@Override
 	public CombinedConfiguration loadConfig() {
-		// TODO Auto-generated method stub
-		return null;
+		return loadConfig(ID);
 	}
 }
