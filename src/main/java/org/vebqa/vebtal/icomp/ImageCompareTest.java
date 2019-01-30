@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.im4java.core.ConvertCmd;
-import org.im4java.core.IMOperation;
 import org.opencv.core.Core;
 import org.opencv.core.DMatch;
 import org.opencv.core.Mat;
@@ -16,15 +14,12 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
-import org.opencv.features2d.FeatureDetector;
+import org.opencv.features2d.ORB;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ar.com.hjg.pngj.PngReader;
 
 /**
  * 
@@ -48,9 +43,7 @@ public class ImageCompareTest {
 
 	private int distance;
 
-	private String im_path;
 	private String opencv_path;
-	private String adapter;
 
 	private String DIFFERENCEFILENAME = "_difference.jpg";
 
@@ -72,7 +65,6 @@ public class ImageCompareTest {
 		currentFile = aTargetFile;
 
 		opencv_path = System.getProperty("OPENCV_DIR");
-		adapter = "opencv";
 		distance = 0;
 	}
 
@@ -107,53 +99,9 @@ public class ImageCompareTest {
 			return result;
 		}
 
-		// check, weather image is three or four channel, containing alpha channel.
-		PngReader tReader = new PngReader(new File(sourceFile));
-		if (tReader.imgInfo.channels == 4) {
-			try {
-				ConvertCmd tCmd = new ConvertCmd();
-				tCmd.setAsyncMode(false);
-				tCmd.setSearchPath(im_path);
-				IMOperation tOp = new IMOperation();
-				tOp.addImage(sourceFile);
-				tOp.flatten();
-				tOp.addImage(sourceFile + "_flatten.png");
-				tCmd.run(tOp);
-			} catch (Exception e) {
-				logger.error("Cannot flatten image!", e);
-			}
-
-			try {
-				ConvertCmd tCmd = new ConvertCmd();
-				tCmd.setAsyncMode(false);
-				tCmd.setSearchPath(im_path);
-				IMOperation tOp = new IMOperation();
-				tOp.addImage(currentFile);
-				tOp.flatten();
-				tOp.addImage(currentFile + "_flatten.png");
-				tCmd.run(tOp);
-			} catch (Exception e) {
-				logger.error("Cannot flatten image!", e);
-			}
-
-			// Lade die Referenz- und Ist-Stand Bilder
-			reference = Imgcodecs.imread(sourceFile + "_flatten.png", Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
-			compare = Imgcodecs.imread(currentFile + "_flatten.png", Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
-			compare.copyTo(resultImage);
-
-			// alles wieder loeschen
-			String f0 = sourceFile + "_flatten.png";
-			File tF0 = new File(f0);
-			tF0.delete();
-
-			String ff0 = currentFile + "_flatten.png";
-			File tFF0 = new File(ff0);
-			tFF0.delete();
-		} else {
-			reference = Imgcodecs.imread(sourceFile, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
-			compare = Imgcodecs.imread(currentFile, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
-			compare.copyTo(resultImage);
-		}
+		reference = Imgcodecs.imread(sourceFile, Imgcodecs.IMREAD_COLOR);
+		compare = Imgcodecs.imread(currentFile, Imgcodecs.IMREAD_COLOR);
+		compare.copyTo(resultImage);
 
 		MatOfKeyPoint keypointsSource = new MatOfKeyPoint();
 		MatOfKeyPoint keypointsCompare = new MatOfKeyPoint();
@@ -161,14 +109,16 @@ public class ImageCompareTest {
 		Mat descriptorSource = new Mat();
 		Mat descriptorCompare = new Mat();
 
-		FeatureDetector detector = FeatureDetector.create(FeatureDetector.ORB);
-		DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.ORB);
+		// FeatureDetector detector = FeatureDetector.create(FeatureDetector.ORB);
+		ORB detector = ORB.create();
 
 		// detect keypoints
 		detector.detect(reference, keypointsSource);
 		detector.detect(compare, keypointsCompare);
 
 		// extract descriptors
+		ORB extractor;
+		extractor = ORB.create();
 		extractor.compute(reference, keypointsSource, descriptorSource);
 		extractor.compute(compare, keypointsCompare, descriptorCompare);
 
