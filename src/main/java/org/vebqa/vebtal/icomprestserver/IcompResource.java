@@ -27,7 +27,7 @@ public class IcompResource extends AbstractTestAdaptionResource implements TestA
 
 		Response result = null;
 		try {
-			Class<?> cmdClass = Class.forName("org.vebqa.vebtal.icomp." + getCommandClassName(cmd));
+			Class<?> cmdClass = Class.forName("org.vebqa.vebtal.icomp.commands." + getCommandClassName(cmd));
 			Constructor<?> cons = cmdClass.getConstructor(String.class, String.class, String.class);
 			Object cmdObj = cons.newInstance(cmd.getCommand(), cmd.getTarget(), cmd.getValue());
 			
@@ -40,7 +40,7 @@ public class IcompResource extends AbstractTestAdaptionResource implements TestA
 			Method m = cmdClass.getDeclaredMethod("executeImpl", Object.class);
 			
 			setStart();
-			// result = (Response) m.invoke(cmdObj, driver);
+			result = (Response) m.invoke(cmdObj, null);
 			setFinished();
 			
 		} catch (ClassNotFoundException e) {

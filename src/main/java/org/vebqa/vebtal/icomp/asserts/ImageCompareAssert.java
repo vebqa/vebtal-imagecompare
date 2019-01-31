@@ -55,7 +55,7 @@ public class ImageCompareAssert extends AbstractAssert<ImageCompareAssert, Strin
             }
             if (result.getResultType() == ImageCompareResult.IMAGESDIFFER) {
                 failWithMessage("Images have <%s> differences. Check difference image for more details: <%s>",
-                                result.getDifferences(),
+                                result.getDifferences(),                  
                                 result.getResultFile());
             }
 
