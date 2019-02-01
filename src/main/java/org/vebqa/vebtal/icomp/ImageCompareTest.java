@@ -70,6 +70,8 @@ public class ImageCompareTest {
 
 	/**
 	 * Fuehrt den Testfall aus.
+	 * @return ImageCompareResult
+	 * @throws Exception
 	 */
 	public ImageCompareResult execute() throws Exception {
 		// C Erweiterung laden, Plattform abhaengig!
