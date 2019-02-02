@@ -14,8 +14,13 @@ import org.vebqa.vebtal.model.CommandType;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 
 public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
 
@@ -55,7 +60,40 @@ public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
 			logger.error(tError, e);
 		}
 
-		return createTab(ID, commandList, clData);
+		Tab icompTab = createTab(ID, commandList, clData);
+		
+		// Add
+		final TextField addCommand = new TextField();
+        addCommand.setPromptText("Command");
+        addCommand.setMaxWidth(200);
+        final TextField addTarget = new TextField();
+        addTarget.setMaxWidth(200);
+        addTarget.setPromptText("Target");
+        final TextField addValue = new TextField();
+        addValue.setMaxWidth(200);
+        addValue.setPromptText("Value");
+ 
+        final Button addButton = new Button("Go");
+        addButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                clData.add(new CommandResult(
+                        addCommand.getText(),
+                        addTarget.getText(),
+                        addValue.getText(),
+                        CommandType.UNDEFINED));
+                addCommand.clear();
+                addTarget.clear();
+                addValue.clear();
+            }
+        });
+ 
+        HBox box = new HBox();
+         
+        box.getChildren().addAll(addCommand, addTarget, addValue, addButton);
+        box.setSpacing(3);
+		// icompTab.add(box);
+		return icompTab;
 	}
 
 	public static void addCommandToList(Command aCmd, CommandType aType) {
