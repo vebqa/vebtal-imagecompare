@@ -10,6 +10,7 @@ import org.vebqa.vebtal.TestAdaptionType;
 import org.vebqa.vebtal.model.Command;
 import org.vebqa.vebtal.model.CommandResult;
 import org.vebqa.vebtal.model.CommandType;
+import org.vebqa.vebtal.sut.SutStatus;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -20,6 +21,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 
 public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
@@ -77,23 +79,28 @@ public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
         addButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                clData.add(new CommandResult(
-                        addCommand.getText(),
-                        addTarget.getText(),
-                        addValue.getText(),
-                        CommandType.UNDEFINED));
+            	Command newCmd = new Command(addCommand.getText(), addTarget.getText(), addValue.getText());
+            	
                 addCommand.clear();
                 addTarget.clear();
                 addValue.clear();
+                
+                IcompResource aResource = new IcompResource();
+                GuiManager.getinstance().setTabStatus(IcompTestAdaptionPlugin.ID, SutStatus.CONNECTED);
+                aResource.execute(newCmd);
+                GuiManager.getinstance().setTabStatus(IcompTestAdaptionPlugin.ID, SutStatus.DISCONNECTED);
             }
         });
  
-        HBox box = new HBox();
+        HBox hbox = new HBox();
          
-        box.getChildren().addAll(addCommand, addTarget, addValue, addButton);
-        box.setSpacing(3);
-		// icompTab.add(box);
-		return icompTab;
+        hbox.getChildren().addAll(addCommand, addTarget, addValue, addButton);
+        hbox.setSpacing(3);
+
+		BorderPane pane = (BorderPane)icompTab.getContent();
+		pane.setTop(hbox);        
+        
+        return icompTab;
 	}
 
 	public static void addCommandToList(Command aCmd, CommandType aType) {
