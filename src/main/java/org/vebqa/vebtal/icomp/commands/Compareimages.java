@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.imageio.stream.FileImageOutputStream;
-
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
 import org.im4java.core.IMOperation;
@@ -22,25 +20,26 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
-import org.opencv.features2d.FeatureDetector;
 import org.opencv.features2d.ORB;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vebqa.vebtal.GuiManager;
+import org.vebqa.vebtal.annotations.Keyword;
 import org.vebqa.vebtal.command.AbstractCommand;
+import org.vebqa.vebtal.icomprestserver.IcompTestAdaptionPlugin;
 import org.vebqa.vebtal.model.CommandType;
 import org.vebqa.vebtal.model.Response;
 
 import ar.com.hjg.pngj.PngReader;
 
+@Keyword(module = IcompTestAdaptionPlugin.ID, command = "CompareImages", hintTarget = "path/to/current.png", hintValue = "path/to/reference.png")
 public class Compareimages extends AbstractCommand {
 
-	Logger logger = LoggerFactory.getLogger(Compareimages.class); 
-	
+	Logger logger = LoggerFactory.getLogger(Compareimages.class);
+
 	public Compareimages(String aCommand, String aTarget, String aValue) {
 		super(aCommand, aTarget, aValue);
 		this.type = CommandType.ASSERTION;
@@ -48,14 +47,13 @@ public class Compareimages extends AbstractCommand {
 
 	@Override
 	public Response executeImpl(Object driver) {
-		String aCurrentSaveImg = this.target;
 		String aCurrentImg = this.target;
 		String aReferenceImg = this.value;
-		
+
 		Response tResp = new Response();
 		tResp.setCode(Response.FAILED);
 		tResp.setMessage("not processed yet.");
-		
+
 		Mat reference = new Mat();
 		Mat current = new Mat();
 		final Mat resultImage = new Mat();
@@ -100,7 +98,7 @@ public class Compareimages extends AbstractCommand {
 		} else {
 			logger.info("current is less than 4 channel - nothing to do!");
 		}
-		
+
 		// check, weather image is three or four channel, containing alpha channel.
 		PngReader tRefReader = new PngReader(new File(aReferenceImg));
 		boolean referenceFlattened = false;
@@ -122,10 +120,10 @@ public class Compareimages extends AbstractCommand {
 				return tResp;
 			}
 			aReferenceImg = aReferenceImg + ".test.png";
-		}  else {
+		} else {
 			logger.info("reference is less than 4 channel - nothing to do!");
 		}
-		
+
 		reference = Imgcodecs.imread(aReferenceImg, Imgcodecs.CV_LOAD_IMAGE_COLOR);
 		// reference.convertTo(reference, CvType.CV_8UC3);
 		current = Imgcodecs.imread(aCurrentImg, Imgcodecs.CV_LOAD_IMAGE_COLOR);
@@ -137,12 +135,12 @@ public class Compareimages extends AbstractCommand {
 			File curFile = new File(aCurrentImg);
 			curFile.delete();
 		}
-		
+
 		if (referenceFlattened) {
 			File refFile = new File(aReferenceImg);
 			refFile.delete();
 		}
-		
+
 		MatOfKeyPoint keypointsRef = new MatOfKeyPoint();
 		MatOfKeyPoint keypointsCurrent = new MatOfKeyPoint();
 
@@ -152,7 +150,7 @@ public class Compareimages extends AbstractCommand {
 		Imgproc.cvtColor(reference, reference, Imgproc.COLOR_RGB2GRAY);
 		Imgproc.cvtColor(current, current, Imgproc.COLOR_RGB2GRAY);
 		Imgproc.cvtColor(resultImage, resultImage, Imgproc.COLOR_RGB2GRAY);
-		
+
 		// detect keypoints
 		ORB detector = ORB.create();
 		// detector = FeatureDetector.create(FeatureDetector.ORB);
@@ -169,7 +167,7 @@ public class Compareimages extends AbstractCommand {
 		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
 
 		System.out.println(descriptorRef.size() + " | " + descriptorCurrent.size());
-		
+
 		// Match points of two images
 		MatOfDMatch matches = new MatOfDMatch();
 		matcher.match(descriptorRef, descriptorCurrent, matches);
@@ -254,8 +252,8 @@ public class Compareimages extends AbstractCommand {
 		} else {
 			tResp.setCode(Response.PASSED);
 			tResp.setMessage("No differences found: " + matchesFinal.size() + " | " + matchesList.size());
-		}		
-		
+		}
+
 		return tResp;
 	}
 
