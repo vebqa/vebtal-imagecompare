@@ -18,7 +18,9 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
+import org.opencv.features2d.FeatureDetector;
 import org.opencv.features2d.ORB;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -26,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vebqa.vebtal.GuiManager;
 import org.vebqa.vebtal.command.AbstractCommand;
-import org.vebqa.vebtal.icomp.ImageCompareResult;
 import org.vebqa.vebtal.model.CommandType;
 import org.vebqa.vebtal.model.Response;
 
@@ -47,9 +48,11 @@ public class Compareimages extends AbstractCommand {
 		String aReferenceImg = this.value;
 		
 		Response tResp = new Response();
+		tResp.setCode(Response.FAILED);
+		tResp.setMessage("not processed yet.");
 		
 		Mat reference = new Mat();
-		Mat compare = new Mat();
+		Mat current = new Mat();
 		final Mat resultImage = new Mat();
 
 		// check, if reference file is existing
@@ -71,12 +74,14 @@ public class Compareimages extends AbstractCommand {
 		// check, weather image is three or four channel, containing alpha channel.
 		PngReader tCurrReader = new PngReader(new File(aCurrentImg));
 		if (tCurrReader.imgInfo.channels == 4) {
+			System.out.println("current is 4 channel - flattening");
 			ConvertCmd tCmd = new ConvertCmd();
 			tCmd.setAsyncMode(false);
 			tCmd.setSearchPath(GuiManager.getinstance().getConfig().getString("im.path"));
 			IMOperation tOp = new IMOperation();
 			tOp.addImage(aCurrentImg);
 			tOp.flatten();
+			tOp.addImage(aCurrentImg + ".test.png");
 			try {
 				tCmd.run(tOp);
 			} catch (IM4JavaException | IOException | InterruptedException e) {
@@ -84,19 +89,22 @@ public class Compareimages extends AbstractCommand {
 				tResp.setMessage("Cannot flatten current image: " + e.getMessage());
 				return tResp;
 			}
-			
-			return tResp;
+			aCurrentImg = aCurrentImg + ".test.png";
+		} else {
+			System.out.println("current is less than 4 channel - nothing to do!");
 		}
 		
 		// check, weather image is three or four channel, containing alpha channel.
 		PngReader tRefReader = new PngReader(new File(aReferenceImg));
 		if (tRefReader.imgInfo.channels == 4) {
+			System.out.println("reference is 4 channel - flattening");
 			ConvertCmd tCmd = new ConvertCmd();
 			tCmd.setAsyncMode(false);
 			tCmd.setSearchPath(GuiManager.getinstance().getConfig().getString("im.path"));
 			IMOperation tOp = new IMOperation();
 			tOp.addImage(aReferenceImg);
 			tOp.flatten();
+			tOp.addImage(aCurrentImg + ".test.png");
 			try {
 				tCmd.run(tOp);
 			} catch (IM4JavaException | IOException | InterruptedException e) {
@@ -104,35 +112,47 @@ public class Compareimages extends AbstractCommand {
 				tResp.setMessage("Cannot flatten reference image: " + e.getMessage());
 				return tResp;
 			}
-			return tResp;
+			aReferenceImg = aReferenceImg + ".test.png";
+		}  else {
+			System.out.println("reference is less than 4 channel - nothing to do!");
 		}
 		
-		reference = Imgcodecs.imread(aReferenceImg, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
-		compare = Imgcodecs.imread(aCurrentImg, Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
-		compare.copyTo(resultImage);
+		reference = Imgcodecs.imread(aReferenceImg, Imgcodecs.CV_LOAD_IMAGE_COLOR);
+		// reference.convertTo(reference, CvType.CV_8UC3);
+		current = Imgcodecs.imread(aCurrentImg, Imgcodecs.CV_LOAD_IMAGE_COLOR);
+		// current.convertTo(current, CvType.CV_8UC3);
+		current.copyTo(resultImage);
 
-		MatOfKeyPoint keypointsSource = new MatOfKeyPoint();
-		MatOfKeyPoint keypointsCompare = new MatOfKeyPoint();
+		MatOfKeyPoint keypointsRef = new MatOfKeyPoint();
+		MatOfKeyPoint keypointsCurrent = new MatOfKeyPoint();
 
-		Mat descriptorSource = new Mat();
-		Mat descriptorCompare = new Mat();
+		Mat descriptorRef = new Mat();
+		Mat descriptorCurrent = new Mat();
 
+		Imgproc.cvtColor(reference, reference, Imgproc.COLOR_RGB2GRAY);
+		Imgproc.cvtColor(current, current, Imgproc.COLOR_RGB2GRAY);
+		Imgproc.cvtColor(resultImage, resultImage, Imgproc.COLOR_RGB2GRAY);
+		
 		// detect keypoints
 		ORB detector = ORB.create();
-		detector.detect(reference, keypointsSource);
-		detector.detect(compare, keypointsCompare);
+		// detector = FeatureDetector.create(FeatureDetector.ORB);
+		detector.detect(reference, keypointsRef);
+		detector.detect(current, keypointsCurrent);
 
 		// extract descriptors
-		ORB extractor = ORB.create();
-		extractor.compute(reference, keypointsSource, descriptorSource);
-		extractor.compute(compare, keypointsCompare, descriptorCompare);
+		ORB descriptor = ORB.create();
+		// descriptor = DescriptorExtractor.create(DescriptorExtractor.ORB);
+		descriptor.compute(reference, keypointsRef, descriptorRef);
+		descriptor.compute(current, keypointsCurrent, descriptorCurrent);
 
 		// Definition of descriptor matcher
 		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
 
+		System.out.println(descriptorRef.size() + " | " + descriptorCurrent.size());
+		
 		// Match points of two images
 		MatOfDMatch matches = new MatOfDMatch();
-		matcher.match(descriptorSource, descriptorCompare, matches);
+		matcher.match(descriptorRef, descriptorCurrent, matches);
 
 		// New method of finding best matches
 		List<DMatch> matchesList = matches.toList();
@@ -140,7 +160,7 @@ public class Compareimages extends AbstractCommand {
 
 		MatOfDMatch errorMat = new MatOfDMatch();
 
-		Integer tDistance = 1;
+		Double tDistance = 1.0;
 
 		for (int i = 0; i < matchesList.size(); i++) {
 			if (matchesList.get(i).distance > tDistance) {
@@ -153,14 +173,13 @@ public class Compareimages extends AbstractCommand {
 		// Differenzmenge merken
 		int tDifferenceCount = matchesFinal.size();
 		logger.debug(tDifferenceCount + " differences found.");
-		ImageCompareResult tResult = new ImageCompareResult();
 
 		// Erzeuge die Differenz von Referenz zu Vergleichststand und speichere
 		// in Destination
 		Mat destination = new Mat();
 
-		if (reference.cols() == compare.cols()) {
-			Core.absdiff(reference, compare, destination);
+		if (reference.cols() == current.cols()) {
+			Core.absdiff(reference, current, destination);
 			// Core.subtract(reference, compare, destination);
 		} else {
 			logger.warn("Image dimensions differ! Cannot create difference file!");
@@ -172,11 +191,12 @@ public class Compareimages extends AbstractCommand {
 		// Suche die Konturen der Differenzen
 		Mat destContour = new Mat();
 		destContour = destination.clone();
+		// destContour.convertTo(destContour, CvType.CV_32SC1);
 
 		List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 		Mat hierarchy = new Mat();
 
-		Imgproc.findContours(destContour, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+		Imgproc.findContours(destContour, contours, hierarchy, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
 
 		if (!destContour.empty() && !matchesFinal.isEmpty()) {
 			Imgproc.cvtColor(resultImage, resultImage, Imgproc.COLOR_GRAY2BGR);
@@ -203,7 +223,7 @@ public class Compareimages extends AbstractCommand {
 						new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 0, 255, 255), 2);
 			}
 
-			String fnDifference = null;
+			String fnDifference = aCurrentImg + ".difference.png";
 
 			Imgcodecs.imwrite(fnDifference, resultImage);
 			tResp.setCode(Response.FAILED);
@@ -211,7 +231,7 @@ public class Compareimages extends AbstractCommand {
 			logger.info(tDifferenceCount + " differences found an written to " + fnDifference);
 		} else {
 			tResp.setCode(Response.PASSED);
-			tResp.setMessage("No differences found.");
+			tResp.setMessage("No differences found: " + matchesFinal.size() + " | " + matchesList.size());
 		}		
 		
 		return tResp;
