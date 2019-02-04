@@ -2,8 +2,12 @@ package org.vebqa.vebtal.icomp.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import javax.imageio.stream.FileImageOutputStream;
 
 import org.im4java.core.ConvertCmd;
 import org.im4java.core.IM4JavaException;
@@ -44,6 +48,7 @@ public class Compareimages extends AbstractCommand {
 
 	@Override
 	public Response executeImpl(Object driver) {
+		String aCurrentSaveImg = this.target;
 		String aCurrentImg = this.target;
 		String aReferenceImg = this.value;
 		
@@ -73,8 +78,10 @@ public class Compareimages extends AbstractCommand {
 
 		// check, weather image is three or four channel, containing alpha channel.
 		PngReader tCurrReader = new PngReader(new File(aCurrentImg));
+		boolean currentFlattened = false;
 		if (tCurrReader.imgInfo.channels == 4) {
-			System.out.println("current is 4 channel - flattening");
+			currentFlattened = true;
+			logger.info("current is 4 channel - flattening");
 			ConvertCmd tCmd = new ConvertCmd();
 			tCmd.setAsyncMode(false);
 			tCmd.setSearchPath(GuiManager.getinstance().getConfig().getString("im.path"));
@@ -91,20 +98,22 @@ public class Compareimages extends AbstractCommand {
 			}
 			aCurrentImg = aCurrentImg + ".test.png";
 		} else {
-			System.out.println("current is less than 4 channel - nothing to do!");
+			logger.info("current is less than 4 channel - nothing to do!");
 		}
 		
 		// check, weather image is three or four channel, containing alpha channel.
 		PngReader tRefReader = new PngReader(new File(aReferenceImg));
+		boolean referenceFlattened = false;
 		if (tRefReader.imgInfo.channels == 4) {
-			System.out.println("reference is 4 channel - flattening");
+			referenceFlattened = true;
+			logger.info("reference is 4 channel - flattening");
 			ConvertCmd tCmd = new ConvertCmd();
 			tCmd.setAsyncMode(false);
 			tCmd.setSearchPath(GuiManager.getinstance().getConfig().getString("im.path"));
 			IMOperation tOp = new IMOperation();
 			tOp.addImage(aReferenceImg);
 			tOp.flatten();
-			tOp.addImage(aCurrentImg + ".test.png");
+			tOp.addImage(aReferenceImg + ".test.png");
 			try {
 				tCmd.run(tOp);
 			} catch (IM4JavaException | IOException | InterruptedException e) {
@@ -114,7 +123,7 @@ public class Compareimages extends AbstractCommand {
 			}
 			aReferenceImg = aReferenceImg + ".test.png";
 		}  else {
-			System.out.println("reference is less than 4 channel - nothing to do!");
+			logger.info("reference is less than 4 channel - nothing to do!");
 		}
 		
 		reference = Imgcodecs.imread(aReferenceImg, Imgcodecs.CV_LOAD_IMAGE_COLOR);
@@ -123,6 +132,17 @@ public class Compareimages extends AbstractCommand {
 		// current.convertTo(current, CvType.CV_8UC3);
 		current.copyTo(resultImage);
 
+		// clean up
+		if (currentFlattened) {
+			File curFile = new File(aCurrentImg);
+			curFile.delete();
+		}
+		
+		if (referenceFlattened) {
+			File refFile = new File(aReferenceImg);
+			refFile.delete();
+		}
+		
 		MatOfKeyPoint keypointsRef = new MatOfKeyPoint();
 		MatOfKeyPoint keypointsCurrent = new MatOfKeyPoint();
 
@@ -223,12 +243,14 @@ public class Compareimages extends AbstractCommand {
 						new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 0, 255, 255), 2);
 			}
 
-			String fnDifference = aCurrentImg + ".difference.png";
+			String fnDifference = GuiManager.getinstance().getConfig().getString("diff.path");
+			String timeStamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date());
+			fnDifference = fnDifference + "\\" + timeStamp + "-diff.png";
 
 			Imgcodecs.imwrite(fnDifference, resultImage);
 			tResp.setCode(Response.FAILED);
-			tResp.setMessage("Images have differences..." + tDifferenceCount);
-			logger.info(tDifferenceCount + " differences found an written to " + fnDifference);
+			tResp.setMessage(tDifferenceCount + " differences found. Diff-File: " + fnDifference);
+			logger.info(tDifferenceCount + " differences found and written to " + fnDifference);
 		} else {
 			tResp.setCode(Response.PASSED);
 			tResp.setMessage("No differences found: " + matchesFinal.size() + " | " + matchesList.size());
