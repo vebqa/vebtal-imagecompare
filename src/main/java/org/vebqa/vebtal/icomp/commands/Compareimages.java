@@ -35,7 +35,7 @@ import org.vebqa.vebtal.model.Response;
 
 import ar.com.hjg.pngj.PngReader;
 
-@Keyword(module = IcompTestAdaptionPlugin.ID, command = "CompareImages", hintTarget = "path/to/current.png", hintValue = "path/to/reference.png")
+@Keyword(module = IcompTestAdaptionPlugin.ID, command = "compareImages", hintTarget = "path/to/current.png", hintValue = "path/to/reference.png")
 public class Compareimages extends AbstractCommand {
 
 	Logger logger = LoggerFactory.getLogger(Compareimages.class);

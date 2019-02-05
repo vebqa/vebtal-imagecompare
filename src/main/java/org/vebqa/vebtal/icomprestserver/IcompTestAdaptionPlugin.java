@@ -1,11 +1,18 @@
 package org.vebqa.vebtal.icomprestserver;
 
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.apache.commons.configuration2.CombinedConfiguration;
 import org.opencv.core.Core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vebqa.vebtal.AbstractTestAdaptionPlugin;
+import org.vebqa.vebtal.CommandAutoComplete;
 import org.vebqa.vebtal.GuiManager;
+import org.vebqa.vebtal.KeywordEntry;
+import org.vebqa.vebtal.KeywordFinder;
 import org.vebqa.vebtal.TestAdaptionType;
 import org.vebqa.vebtal.model.Command;
 import org.vebqa.vebtal.model.CommandResult;
@@ -21,8 +28,18 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
 public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
 
@@ -65,14 +82,25 @@ public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
 		Tab icompTab = createTab(ID, commandList, clData);
 		
 		// Add
-		final TextField addCommand = new TextField();
+		// Add (Test generation)
+		Text txtGeneration = new Text();
+		txtGeneration.setText("test generation");
+		txtGeneration.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 20)); 
+		
+		List<KeywordEntry> allModuleKeywords = KeywordFinder.getinstance().getKeywordsByModule(IcompTestAdaptionPlugin.ID);
+		TreeSet<String> sortedKeywords = new TreeSet<>();
+		for (KeywordEntry aKeyword : allModuleKeywords) {
+			sortedKeywords.add(aKeyword.getCommand());
+		}
+		
+		final CommandAutoComplete addCommand = new CommandAutoComplete(sortedKeywords);
         addCommand.setPromptText("Command");
         addCommand.setMaxWidth(200);
         final TextField addTarget = new TextField();
-        addTarget.setMaxWidth(200);
+        addTarget.setMaxWidth(350);
         addTarget.setPromptText("Target");
         final TextField addValue = new TextField();
-        addValue.setMaxWidth(200);
+        addValue.setMaxWidth(350);
         addValue.setPromptText("Value");
  
         final Button addButton = new Button("Go");
@@ -94,8 +122,9 @@ public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
  
         HBox hbox = new HBox();
          
-        hbox.getChildren().addAll(addCommand, addTarget, addValue, addButton);
-        hbox.setSpacing(3);
+        hbox.getChildren().addAll(txtGeneration, addCommand, addTarget, addValue, addButton);
+        hbox.setSpacing(5);
+        hbox.setBorder(new Border(new BorderStroke(Color.GREEN, BorderStrokeStyle.SOLID, new CornerRadii(10), new BorderWidths(3))));
 
 		BorderPane pane = (BorderPane)icompTab.getContent();
 		pane.setTop(hbox);        
