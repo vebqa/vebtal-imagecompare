@@ -1,7 +1,6 @@
 package org.vebqa.vebtal.icomprestserver;
 
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.configuration2.CombinedConfiguration;
@@ -124,7 +123,7 @@ public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
          
         hbox.getChildren().addAll(txtGeneration, addCommand, addTarget, addValue, addButton);
         hbox.setSpacing(5);
-        hbox.setBorder(new Border(new BorderStroke(Color.GREEN, BorderStrokeStyle.SOLID, new CornerRadii(10), new BorderWidths(3))));
+        hbox.setBorder(new Border(new BorderStroke(Color.BLUE, BorderStrokeStyle.SOLID, new CornerRadii(2), new BorderWidths(3))));
 
 		BorderPane pane = (BorderPane)icompTab.getContent();
 		pane.setTop(hbox);        
