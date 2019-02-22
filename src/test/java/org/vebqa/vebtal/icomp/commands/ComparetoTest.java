@@ -1,0 +1,32 @@
+package org.vebqa.vebtal.icomp.commands;
+
+import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
+import static org.junit.Assert.assertThat;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.vebqa.vebtal.icomp.ImageDriver;
+import org.vebqa.vebtal.model.Response;
+
+public class ComparetoTest {
+
+	@Rule
+	public final ImageDriver imageDriver = new ImageDriver()
+			.setOpenCVPath("C:\\tools\\VEBTal (Beta Release)\\tools\\opencv-3.4.3-vc14_vc15\\opencv\\build\\java\\x64")
+			.loadImage("./src/test/java/resource/splash001.png");
+
+	@Test
+	public void verifyThatCurrentImageHasNoDifferencesToReferenceImage() {
+		// create command to test
+		Compareto cmd = new Compareto("compareTo", "./src/test/java/resource/splash001_reference.png", "c:/temp/diff.png");
+		Response result = cmd.executeImpl(imageDriver);
+
+		// create a green result object
+		Response resultCheck = new Response();
+		resultCheck.setCode(Response.FAILED);
+		resultCheck.setMessage("145 differences found. Diff-File: c:/temp/diff.png");
+
+		// check
+		assertThat(resultCheck, samePropertyValuesAs(result));
+	}
+}

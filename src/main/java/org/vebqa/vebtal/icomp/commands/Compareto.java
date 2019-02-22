@@ -1,11 +1,8 @@
 package org.vebqa.vebtal.icomp.commands;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Vector;
 
 import org.opencv.core.Core;
 import org.opencv.core.DMatch;
@@ -23,7 +20,6 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vebqa.vebtal.GuiManager;
 import org.vebqa.vebtal.annotations.Keyword;
 import org.vebqa.vebtal.command.AbstractCommand;
 import org.vebqa.vebtal.icomp.ImageDriver;
@@ -31,135 +27,43 @@ import org.vebqa.vebtal.icomprestserver.IcompTestAdaptionPlugin;
 import org.vebqa.vebtal.model.CommandType;
 import org.vebqa.vebtal.model.Response;
 
-import ar.com.hjg.pngj.PngReader;
+@Keyword(module = IcompTestAdaptionPlugin.ID, command = "CompareTo", hintTarget = "path/to/current.png", hintValue = "path/to/difference.png")
+public class Compareto extends AbstractCommand {
 
-@Deprecated
-@Keyword(module = IcompTestAdaptionPlugin.ID, command = "compareImages", hintTarget = "path/to/current.png", hintValue = "path/to/reference.png")
-public class Compareimages extends AbstractCommand {
-
-	Logger logger = LoggerFactory.getLogger(Compareimages.class);
-
-	public Compareimages(String aCommand, String aTarget, String aValue) {
+	private static final Logger logger = LoggerFactory.getLogger(Compareto.class);
+	
+	public Compareto(String aCommand, String aTarget, String aValue) {
 		super(aCommand, aTarget, aValue);
 		this.type = CommandType.ASSERTION;
 	}
 
 	@Override
 	public Response executeImpl(Object driver) {
-		
 		ImageDriver imgDriver = (ImageDriver)driver;
 		
-		String aCurrentImg = this.target;
-		String aReferenceImg = this.value;
-
+		String aReferenceImg = this.target;
+		String aDifferenceImg = this.value;
+		
 		Response tResp = new Response();
-		tResp.setCode(Response.FAILED);
-		tResp.setMessage("not processed yet.");
-
-		Mat reference = new Mat();
-		Mat current = new Mat();
-		final Mat resultImage = new Mat();
-
-		// check, if reference file is existing
+		
+		if (!imgDriver.isLoaded()) {
+			tResp.setCode(Response.FAILED);
+			tResp.setMessage("No opened file.");
+			return tResp;
+		}
+		
+		// check, if a current file is existing
 		File tReference = new File(aReferenceImg);
 		if (!tReference.exists()) {
 			tResp.setCode(Response.FAILED);
 			tResp.setMessage("Cannot find reference image!");
 			return tResp;
 		}
+		
+		Mat reference = Imgcodecs.imread(aReferenceImg, Imgcodecs.CV_LOAD_IMAGE_COLOR);
 
-		// check, if compare file is existing
-		File tCurrent = new File(aCurrentImg);
-		if (!tCurrent.exists()) {
-			tResp.setCode(Response.FAILED);
-			tResp.setMessage("Cannot find current image!");
-			return tResp;
-		}
-
-		// check, weather image is three or four channel, containing alpha channel.
-		PngReader tCurrReader = new PngReader(new File(aCurrentImg));
-		boolean currentFlattened = false;
-		if (tCurrReader.imgInfo.channels == 4) {
-			currentFlattened = true;
-//			logger.info("current is 4 channel - flattening");
-//			ConvertCmd tCmd = new ConvertCmd();
-//			tCmd.setAsyncMode(false);
-//			tCmd.setSearchPath(GuiManager.getinstance().getConfig().getString("im.path"));
-//			IMOperation tOp = new IMOperation();
-//			tOp.addImage(aCurrentImg);
-//			tOp.flatten();
-//			tOp.addImage(aCurrentImg + ".test.png");
-//			try {
-//				tCmd.run(tOp);
-//			} catch (IM4JavaException | IOException | InterruptedException e) {
-//				tResp.setCode(Response.FAILED);
-//				tResp.setMessage("Cannot flatten current image: " + e.getMessage());
-//				return tResp;
-//			}
-//			aCurrentImg = aCurrentImg + ".test.png";
-		} else {
-			logger.info("current is less than 4 channel - nothing to do!");
-		}
-
-		// check, weather image is three or four channel, containing alpha channel.
-		PngReader tRefReader = new PngReader(new File(aReferenceImg));
-		boolean referenceFlattened = false;
-		if (tRefReader.imgInfo.channels == 4) {
-			referenceFlattened = true;
-//			logger.info("reference is 4 channel - flattening");
-//			ConvertCmd tCmd = new ConvertCmd();
-//			tCmd.setAsyncMode(false);
-//			tCmd.setSearchPath(GuiManager.getinstance().getConfig().getString("im.path"));
-//			IMOperation tOp = new IMOperation();
-//			tOp.addImage(aReferenceImg);
-//			tOp.flatten();
-//			tOp.addImage(aReferenceImg + ".test.png");
-//			try {
-//				tCmd.run(tOp);
-//			} catch (IM4JavaException | IOException | InterruptedException e) {
-//				tResp.setCode(Response.FAILED);
-//				tResp.setMessage("Cannot flatten reference image: " + e.getMessage());
-//				return tResp;
-//			}
-//			aReferenceImg = aReferenceImg + ".test.png";
-		} else {
-			logger.info("reference is less than 4 channel - nothing to do!");
-		}
-
-		reference = Imgcodecs.imread(aReferenceImg, Imgcodecs.CV_LOAD_IMAGE_COLOR);
-		if (referenceFlattened) {
-			Vector<Mat> rgba = new Vector<Mat>();
-			Core.split(reference, rgba);
-			logger.info("Reference image channel size: " + rgba.size());
-			if (rgba.size() > 3) {
-				rgba.remove(rgba.size() - 1);
-			}
-			Core.merge(rgba, reference);
-		}
-
-		current = Imgcodecs.imread(aCurrentImg, Imgcodecs.CV_LOAD_IMAGE_COLOR);
-		if (currentFlattened) {
-			Vector<Mat> rgba = new Vector<Mat>();
-			Core.split(current, rgba);
-			logger.info("Current image channel size: " + rgba.size());
-			if (rgba.size() > 3) {
-				rgba.remove(rgba.size() - 1);
-			}
-			Core.merge(rgba, current);
-		}
-
-		current.copyTo(resultImage);
-
-		// clean up
-//		if (currentFlattened) {
-//			File curFile = new File(aCurrentImg);
-//			curFile.delete();
-//		}
-//
-//		if (referenceFlattened) {
-//			File refFile = new File(aReferenceImg);
-//			refFile.delete();
-//		}
+		Mat resultImage = new Mat();
+		imgDriver.getCurrent().copyTo(resultImage);
 
 		MatOfKeyPoint keypointsRef = new MatOfKeyPoint();
 		MatOfKeyPoint keypointsCurrent = new MatOfKeyPoint();
@@ -168,20 +72,20 @@ public class Compareimages extends AbstractCommand {
 		Mat descriptorCurrent = new Mat();
 
 		Imgproc.cvtColor(reference, reference, Imgproc.COLOR_RGB2GRAY);
-		Imgproc.cvtColor(current, current, Imgproc.COLOR_RGB2GRAY);
+		Imgproc.cvtColor(imgDriver.getCurrent(), imgDriver.getCurrent(), Imgproc.COLOR_RGB2GRAY);
 		Imgproc.cvtColor(resultImage, resultImage, Imgproc.COLOR_RGB2GRAY);
 
 		// detect keypoints
 		ORB detector = ORB.create();
 		// detector = FeatureDetector.create(FeatureDetector.ORB);
 		detector.detect(reference, keypointsRef);
-		detector.detect(current, keypointsCurrent);
+		detector.detect(imgDriver.getCurrent(), keypointsCurrent);
 
 		// extract descriptors
 		ORB descriptor = ORB.create();
 		// descriptor = DescriptorExtractor.create(DescriptorExtractor.ORB);
 		descriptor.compute(reference, keypointsRef, descriptorRef);
-		descriptor.compute(current, keypointsCurrent, descriptorCurrent);
+		descriptor.compute(imgDriver.getCurrent(), keypointsCurrent, descriptorCurrent);
 
 		// Definition of descriptor matcher
 		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
@@ -216,8 +120,8 @@ public class Compareimages extends AbstractCommand {
 		// in Destination
 		Mat destination = new Mat();
 
-		if (reference.cols() == current.cols()) {
-			Core.absdiff(reference, current, destination);
+		if (reference.cols() == imgDriver.getCurrent().cols()) {
+			Core.absdiff(reference, imgDriver.getCurrent(), destination);
 			// Core.subtract(reference, compare, destination);
 		} else {
 			logger.warn("Image dimensions differ! Cannot create difference file!");
@@ -261,17 +165,13 @@ public class Compareimages extends AbstractCommand {
 						new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 0, 255, 255), 2);
 			}
 
-			String fnDifference = GuiManager.getinstance().getConfig().getString("diff.path");
-			String timeStamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date());
-			fnDifference = fnDifference + "\\" + timeStamp + "-diff.png";
-
-			Imgcodecs.imwrite(fnDifference, resultImage);
+			Imgcodecs.imwrite(aDifferenceImg, resultImage);
 			tResp.setCode(Response.FAILED);
-			tResp.setMessage(tDifferenceCount + " differences found. Diff-File: " + fnDifference);
-			logger.info(tDifferenceCount + " differences found and written to " + fnDifference);
+			tResp.setMessage(tDifferenceCount + " differences found. Diff-File: " + aDifferenceImg);
+			logger.info(tDifferenceCount + " differences found and written to " + aDifferenceImg);
 		} else {
 			tResp.setCode(Response.PASSED);
-			tResp.setMessage("No differences found: " + matchesFinal.size() + " | " + matchesList.size());
+			tResp.setMessage("No differences found.");
 		}
 
 		return tResp;
