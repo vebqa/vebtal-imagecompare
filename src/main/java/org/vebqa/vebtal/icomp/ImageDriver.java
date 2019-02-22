@@ -17,13 +17,21 @@ public class ImageDriver extends ExternalResource {
 	
 	private boolean isLoaded;
 	
+	private boolean isInitialized;
+	
 	private Mat current;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageDriver.class);
 	
 	public ImageDriver() {
 		this.isLoaded = false;
-		this.opencv_path = null;
+		this.isInitialized = false;
+		
+		// /get opencv path from environment, if available.
+		this.opencv_path = System.getenv("OPENCV");
+		if (this.opencv_path != null && this.opencv_path != "") {
+			init();
+		}
 	}
 
 	public void init() {
@@ -31,6 +39,7 @@ public class ImageDriver extends ExternalResource {
 		opencv_path = opencv_path + "\\" + Core.NATIVE_LIBRARY_NAME + ".dll";
 		try {
 			System.load(opencv_path);
+			this.isInitialized = true;
 		} catch (Exception e) {
 			String tError = "Native code library failed to load from: " + opencv_path;
 			logger.error(tError, e);
@@ -61,6 +70,10 @@ public class ImageDriver extends ExternalResource {
 	
 	public boolean isLoaded() {
 		return this.isLoaded;
+	}
+	
+	public boolean isInitialized() {
+		return this.isInitialized;
 	}
 	
 	/**

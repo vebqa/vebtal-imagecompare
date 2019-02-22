@@ -27,6 +27,12 @@ public class Open extends AbstractCommand {
 		tResp.setCode(Response.FAILED);
 		tResp.setMessage("not processed yet.");
 
+		if (!imgDriver.isInitialized()) {
+			tResp.setCode(Response.FAILED);
+			tResp.setMessage("OpenCV not initialized. Libraries not loaded yet.");
+			return tResp;
+		}
+
 		// check, if a current file is existing
 		File tCurrent = new File(aCurrentImg);
 		if (!tCurrent.exists()) {

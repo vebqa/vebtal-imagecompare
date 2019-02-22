@@ -46,6 +46,12 @@ public class Compareto extends AbstractCommand {
 		
 		Response tResp = new Response();
 		
+		if (!imgDriver.isInitialized()) {
+			tResp.setCode(Response.FAILED);
+			tResp.setMessage("OpenCV not initialized. Libraries not loaded yet.");
+			return tResp;
+		}
+
 		if (!imgDriver.isLoaded()) {
 			tResp.setCode(Response.FAILED);
 			tResp.setMessage("No opened file.");

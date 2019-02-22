@@ -10,9 +10,11 @@ import org.vebqa.vebtal.model.Response;
 
 public class CloseTest {
 
+	/**
+	 * OpenCV path should be in env with key "OPENCV"
+	 */
 	@Rule
 	public final ImageDriver imageDriver = new ImageDriver()
-			.setOpenCVPath("C:\\tools\\VEBTal (Beta Release)\\tools\\opencv-3.4.3-vc14_vc15\\opencv\\build\\java\\x64")
 			.loadImage("./src/test/java/resource/splash001.png");
 
 	@Test
