@@ -18,7 +18,7 @@ public class ComparetoTest {
 			.loadImage("./src/test/java/resource/splash001.png");
 
 	@Test
-	public void verifyThatCurrentImageHasNoDifferencesToReferenceImage() {
+	public void verifyThatCurrentImageHas145DifferencesToReferenceImage() {
 		// create command to test
 		Compareto cmd = new Compareto("compareTo", "./src/test/java/resource/splash001_reference.png", "c:/temp/diff.png");
 		Response result = cmd.executeImpl(imageDriver);
@@ -27,6 +27,21 @@ public class ComparetoTest {
 		Response resultCheck = new Response();
 		resultCheck.setCode(Response.FAILED);
 		resultCheck.setMessage("145 differences found. Diff-File: c:/temp/diff.png");
+
+		// check
+		assertThat(resultCheck, samePropertyValuesAs(result));
+	}
+	
+	@Test
+	public void verifyThatCurrentImageHasNoDifferencesToReferenceImage() {
+		// create command to test
+		Compareto cmd = new Compareto("compareTo", "./src/test/java/resource/splash001.png", "c:/temp/diff.png");
+		Response result = cmd.executeImpl(imageDriver);
+
+		// create a green result object
+		Response resultCheck = new Response();
+		resultCheck.setCode(Response.PASSED);
+		resultCheck.setMessage("No differences found.");
 
 		// check
 		assertThat(resultCheck, samePropertyValuesAs(result));
