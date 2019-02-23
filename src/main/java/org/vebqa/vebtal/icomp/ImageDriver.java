@@ -27,7 +27,7 @@ public class ImageDriver extends ExternalResource {
 		this.isLoaded = false;
 		this.isInitialized = false;
 		
-		// /get opencv path from environment, if available.
+		// /get opencv path from environment, if available and initialize automatically
 		this.opencv_path = System.getenv("OPENCV");
 		if (this.opencv_path != null && this.opencv_path != "") {
 			init();
@@ -59,7 +59,7 @@ public class ImageDriver extends ExternalResource {
 	}
 	
 	public void load() {
-		this.current = Imgcodecs.imread(this.pathToResource, Imgcodecs.CV_LOAD_IMAGE_COLOR);
+		this.current = Imgcodecs.imread(this.pathToResource, Imgcodecs.IMREAD_COLOR);
 		this.isLoaded = true;
 	}
 	

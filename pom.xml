@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.github.vebqa</groupId>
 		<artifactId>vebtal-parent</artifactId>
-		<version>0.9.7</version>
+		<version>0.9.8</version>
 	</parent>
 	<artifactId>vebtal-imagecompare</artifactId>
 	<version>0.9.6</version>
@@ -35,7 +35,7 @@
 		<dependency>
 			<groupId>com.github.vebqa</groupId>
 			<artifactId>vebtal-api</artifactId>
-			<version>0.9.10</version>
+			<version>0.9.11</version>
 		</dependency>
 
 		<!-- 3rd party -->
@@ -44,20 +44,12 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.6</version>
 		</dependency>
+		<!-- <dependency> <groupId>org.bytedeco.javacpp-presets</groupId> <artifactId>opencv</artifactId> 
+			<version>3.4.3-1.4.3</version> </dependency> -->
 		<dependency>
 			<groupId>org.bytedeco.javacpp-presets</groupId>
 			<artifactId>opencv</artifactId>
-			<version>3.4.3-1.4.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.im4java</groupId>
-			<artifactId>im4java</artifactId>
-			<version>1.4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>ar.com.hjg</groupId>
-			<artifactId>pngj</artifactId>
-			<version>2.1.0</version>
+			<version>4.0.1-1.4.4</version>
 		</dependency>
 		<!-- logging -->
 		<dependency>
@@ -68,7 +60,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.11.1</version>
+			<version>${version.assertj}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hamcrest</groupId>

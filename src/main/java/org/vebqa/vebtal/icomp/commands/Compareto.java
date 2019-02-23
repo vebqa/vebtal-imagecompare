@@ -66,7 +66,7 @@ public class Compareto extends AbstractCommand {
 			return tResp;
 		}
 		
-		Mat reference = Imgcodecs.imread(aReferenceImg, Imgcodecs.CV_LOAD_IMAGE_COLOR);
+		Mat reference = Imgcodecs.imread(aReferenceImg, Imgcodecs.IMREAD_COLOR);
 
 		Mat resultImage = new Mat();
 		imgDriver.getCurrent().copyTo(resultImage);

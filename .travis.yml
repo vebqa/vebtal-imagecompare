@@ -5,4 +5,4 @@ jdk:
 
 install: true
 
-script: mvn clean package
+script: mvn clean package -DskipTests=true
