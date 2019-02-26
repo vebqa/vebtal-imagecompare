@@ -1,5 +1,7 @@
 package org.vebqa.vebtal.icomp;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 
 import org.junit.rules.ExternalResource;
@@ -59,6 +61,7 @@ public class ImageDriver extends ExternalResource {
 	}
 	
 	public void load() {
+		assertTrue("OpenCV not initialized - provide an OpenCV binary path before usage.", this.isInitialized);
 		this.current = Imgcodecs.imread(this.pathToResource, Imgcodecs.IMREAD_COLOR);
 		this.isLoaded = true;
 	}

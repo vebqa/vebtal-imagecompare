@@ -27,10 +27,12 @@ import org.vebqa.vebtal.icomprestserver.IcompTestAdaptionPlugin;
 import org.vebqa.vebtal.model.CommandType;
 import org.vebqa.vebtal.model.Response;
 
-@Keyword(module = IcompTestAdaptionPlugin.ID, command = "CompareTo", hintTarget = "path/to/current.png", hintValue = "path/to/difference.png")
+@Keyword(module = IcompTestAdaptionPlugin.ID, command = "CompareTo", hintTarget = "path/to/reference.png", hintValue = "path/to/difference.png")
 public class Compareto extends AbstractCommand {
 
 	private static final Logger logger = LoggerFactory.getLogger(Compareto.class);
+	
+	Mat workImage;
 	
 	public Compareto(String aCommand, String aTarget, String aValue) {
 		super(aCommand, aTarget, aValue);
@@ -70,6 +72,10 @@ public class Compareto extends AbstractCommand {
 
 		Mat resultImage = new Mat();
 		imgDriver.getCurrent().copyTo(resultImage);
+		
+		// Work on copy only
+		workImage = new Mat();
+		imgDriver.getCurrent().copyTo(workImage);
 
 		MatOfKeyPoint keypointsRef = new MatOfKeyPoint();
 		MatOfKeyPoint keypointsCurrent = new MatOfKeyPoint();
@@ -78,20 +84,20 @@ public class Compareto extends AbstractCommand {
 		Mat descriptorCurrent = new Mat();
 
 		Imgproc.cvtColor(reference, reference, Imgproc.COLOR_RGB2GRAY);
-		Imgproc.cvtColor(imgDriver.getCurrent(), imgDriver.getCurrent(), Imgproc.COLOR_RGB2GRAY);
+		Imgproc.cvtColor(workImage, workImage, Imgproc.COLOR_RGB2GRAY);
 		Imgproc.cvtColor(resultImage, resultImage, Imgproc.COLOR_RGB2GRAY);
 
 		// detect keypoints
 		ORB detector = ORB.create();
 		// detector = FeatureDetector.create(FeatureDetector.ORB);
 		detector.detect(reference, keypointsRef);
-		detector.detect(imgDriver.getCurrent(), keypointsCurrent);
+		detector.detect(workImage, keypointsCurrent);
 
 		// extract descriptors
 		ORB descriptor = ORB.create();
 		// descriptor = DescriptorExtractor.create(DescriptorExtractor.ORB);
 		descriptor.compute(reference, keypointsRef, descriptorRef);
-		descriptor.compute(imgDriver.getCurrent(), keypointsCurrent, descriptorCurrent);
+		descriptor.compute(workImage, keypointsCurrent, descriptorCurrent);
 
 		// Definition of descriptor matcher
 		DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
@@ -126,8 +132,8 @@ public class Compareto extends AbstractCommand {
 		// in Destination
 		Mat destination = new Mat();
 
-		if (reference.cols() == imgDriver.getCurrent().cols()) {
-			Core.absdiff(reference, imgDriver.getCurrent(), destination);
+		if (reference.cols() == workImage.cols()) {
+			Core.absdiff(reference, workImage, destination);
 			// Core.subtract(reference, compare, destination);
 		} else {
 			logger.warn("Image dimensions differ! Cannot create difference file!");
