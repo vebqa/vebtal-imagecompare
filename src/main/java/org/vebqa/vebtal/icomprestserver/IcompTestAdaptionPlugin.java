@@ -13,6 +13,7 @@ import org.vebqa.vebtal.GuiManager;
 import org.vebqa.vebtal.KeywordEntry;
 import org.vebqa.vebtal.KeywordFinder;
 import org.vebqa.vebtal.TestAdaptionType;
+import org.vebqa.vebtal.icomp.ImageStore;
 import org.vebqa.vebtal.model.Command;
 import org.vebqa.vebtal.model.CommandResult;
 import org.vebqa.vebtal.model.CommandType;
@@ -70,13 +71,7 @@ public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
 	@Override
 	public Tab startup() {
 		String opencv_path = GuiManager.getinstance().getConfig().getString("opencv.path");
-		opencv_path = opencv_path + "\\" + Core.NATIVE_LIBRARY_NAME + ".dll";
-		try {
-			System.load(opencv_path);
-		} catch (Exception e) {
-			String tError = "Native code library failed to load from: " + opencv_path;
-			logger.error(tError, e);
-		}
+		ImageStore.getStore().getDriver().setOpenCVPath(opencv_path);
 
 		Tab icompTab = createTab(ID, commandList, clData);
 		
