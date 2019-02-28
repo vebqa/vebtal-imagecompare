@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.apache.commons.configuration2.CombinedConfiguration;
-import org.opencv.core.Core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vebqa.vebtal.AbstractTestAdaptionPlugin;
@@ -70,7 +69,9 @@ public class IcompTestAdaptionPlugin extends AbstractTestAdaptionPlugin {
 
 	@Override
 	public Tab startup() {
+		// load opencv dll
 		String opencv_path = GuiManager.getinstance().getConfig().getString("opencv.path");
+		logger.info("load opencv binary from path: " + opencv_path);
 		ImageStore.getStore().getDriver().setOpenCVPath(opencv_path);
 
 		Tab icompTab = createTab(ID, commandList, clData);
