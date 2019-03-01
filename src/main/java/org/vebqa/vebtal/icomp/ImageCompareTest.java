@@ -57,8 +57,8 @@ public class ImageCompareTest {
 	/**
 	 * Constructor
 	 * 
-	 * @param aSourceFile
-	 * @param aTargetFile
+	 * @param aSourceFile a current image
+	 * @param aTargetFile a reference image
 	 */
 	public ImageCompareTest(String aSourceFile, String aTargetFile) {
 		sourceFile = aSourceFile;
@@ -71,7 +71,7 @@ public class ImageCompareTest {
 	/**
 	 * Fuehrt den Testfall aus.
 	 * @return ImageCompareResult
-	 * @throws Exception
+	 * @throws Exception possible exception from opencv
 	 */
 	public ImageCompareResult execute() throws Exception {
 		// C Erweiterung laden, Plattform abhaengig!

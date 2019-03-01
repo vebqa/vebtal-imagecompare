@@ -81,7 +81,8 @@ public class ImageDriver extends ExternalResource {
 	
 	/**
 	 * Usage via fluent api in external resource context
-	 * @param aPath
+	 * @param aPath actual path to driver
+	 * @return the driver
 	 */
 	public ImageDriver setOpenCVPath(String aPath) {
 		this.opencv_path = aPath;
