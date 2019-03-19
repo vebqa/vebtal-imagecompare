@@ -5,10 +5,10 @@
 	<parent>
 		<groupId>com.github.vebqa</groupId>
 		<artifactId>vebtal-parent</artifactId>
-		<version>0.9.9</version>
+		<version>0.9.10</version>
 	</parent>
 	<artifactId>vebtal-imagecompare</artifactId>
-	<version>0.9.7</version>
+	<version>0.9.8</version>
 
 	<name>Test Adaption Layer for image comparison</name>
 	<description>Tests for comparing images and provides user interfaces with junit / assertj or keyword driven approach</description>
@@ -35,17 +35,14 @@
 		<dependency>
 			<groupId>com.github.vebqa</groupId>
 			<artifactId>vebtal-api</artifactId>
-			<version>0.9.12</version>
+			<version>0.9.13</version>
 		</dependency>
-
 		<!-- 3rd party -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.6</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.bytedeco.javacpp-presets</groupId> <artifactId>opencv</artifactId> 
-			<version>3.4.3-1.4.3</version> </dependency> -->
 		<dependency>
 			<groupId>org.bytedeco.javacpp-presets</groupId>
 			<artifactId>opencv</artifactId>
@@ -65,7 +62,7 @@
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest</artifactId>
-			<version>2.1</version>
+			<version>${version.hamcrest}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
