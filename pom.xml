@@ -5,10 +5,10 @@
 	<parent>
 		<groupId>com.github.vebqa</groupId>
 		<artifactId>vebtal-parent</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1</version>
 	</parent>
 	<artifactId>vebtal-imagecompare</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 
 	<name>Test Adaption Layer for image comparison</name>
 	<description>Tests for comparing images and provides user interfaces with junit / assertj or keyword driven approach</description>
@@ -35,7 +35,7 @@
 		<dependency>
 			<groupId>com.github.vebqa</groupId>
 			<artifactId>vebtal-api</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
 		<!-- 3rd party -->
 		<dependency>
